@@ -62,14 +62,15 @@ extern "C" {
  */
 
 /* Events to excite Task System */
-typedef enum task_system_ev {EV_SYS_BTN_ON_IDLE,
-							 EV_SYS_BTN_ON_ACTIVE,
-							 EV_SYS_SWITCH_OFF_ACTIVE,
-							 EV_SYS_SWITCH_OFF_IDLE,
+typedef enum task_system_ev {
 							 EV_SYS_SWITCH_AIRE_ACTIVE,
 							 EV_SYS_SWITCH_AIRE_IDLE,
 							 EV_SYS_FAILURE_ACTIVE,
 							 EV_SYS_FAILURE_IDLE,
+							 EV_SYS_BTN_ON_IDLE,
+							 EV_SYS_BTN_ON_ACTIVE,
+							 EV_SYS_SWITCH_OFF_ACTIVE,
+							 EV_SYS_SWITCH_OFF_IDLE,
 							} task_system_ev_t;
 
 /* State of Task System */

@@ -63,7 +63,7 @@
 
 /********************** internal data declaration ****************************/
 const task_sensor_cfg_t task_sensor_cfg_list[] = {
-	//{ID_BTN_A,  BTN_A_PORT,  BTN_A_PIN,  BTN_A_PRESSED, DEL_BTN_XX_MAX, EV_SYS_BTN_ON_IDLE,  EV_SYS_BTN_ON_ACTIVE},
+	//{ID_BTN_A,  BTN_A_PORT,  BTN_A_PIN,  BTN_A_PRESSED, DEL_BTN_XX_MAX, EV_MEN_ENT_IDLE, EV_MEN_ENT_ACTIVE},
 	{ID_BTN_ENT,  BTN_ENT_PORT,  BTN_ENT_PIN,  BTN_ENT_PRESSED, DEL_BTN_XX_MAX, EV_MEN_ENT_IDLE, EV_MEN_ENT_ACTIVE},
 	{ID_BTN_NEX,  BTN_NEX_PORT,  BTN_NEX_PIN,  BTN_NEX_PRESSED, DEL_BTN_XX_MAX, EV_MEN_NEX_IDLE, EV_MEN_NEX_ACTIVE},
 
@@ -206,9 +206,6 @@ void task_sensor_update(void *parameters)
 							if ( p_task_sensor_dta->tick > 0 )
 							{
 								p_task_sensor_dta->tick --;
-								// tengo que salir del switch ya que el codigo tiene que ser no bloqueante
-								//si hago un while aca para decrecer el tick esto bloquea mi codigo
-								//y no hace nada mas mientras siga aca adentro
 							}
 							else
 							{

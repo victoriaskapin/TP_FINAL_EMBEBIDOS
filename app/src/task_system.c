@@ -226,13 +226,9 @@ void task_system_update(void *parameters)
 								TIM3->CCR3 = 3000;
 								HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3); //buzzer off
 
-								if(p_task_system_dta->tick/2 == p_task_system_dta->tick)
-								{
-									snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-									displayCharPositionWrite(0, 0);
-									displayStringWrite(display_str);
-								}
-
+								snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+								displayCharPositionWrite(0, 0);
+								displayStringWrite(display_str);
 
 								aire_a_on = true;
 
@@ -276,18 +272,6 @@ void task_system_update(void *parameters)
 								p_task_system_dta->state = ST_SYS_XX_SWITCH_MOTORS;
 							}
 
-							// Actualizo el display
-
-
-							/*
-							 * ACTUALIZAR DISPLAY ACA
-							 *
-							 */
-
-
-							//displayCharPositionWrite(1, 0);
-
-
 
 							if(EV_SYS_BTN_ON_ACTIVE == p_task_system_dta->event)
 							{
@@ -325,7 +309,8 @@ void task_system_update(void *parameters)
 							put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_USER_B);
 							put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_USER_A);
 
-							if(EV_SYS_BTN_ON_ACTIVE == p_task_system_dta->event) // si se vuelve a tocar btn ON vuelvo a reiniciar el sistema
+							if(EV_SYS_BTN_ON_ACTIVE == p_task_system_dta->event)
+							// si se vuelve a tocar btn ON vuelvo a reiniciar el sistema
 							{
 								p_task_system_dta->state = ST_SYS_XX_IDLE;
 							}

@@ -226,8 +226,8 @@ void task_system_update(void *parameters)
 								TIM3->CCR3 = 3000;
 								HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3); //buzzer off
 
-								snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-								displayCharPositionWrite(0, 0);
+								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+	            	  			displayCharPositionWrite(0,1);
 								displayStringWrite(display_str);
 
 								aire_a_on = true;
@@ -249,7 +249,7 @@ void task_system_update(void *parameters)
 							if(p_task_system_dta->tick/2 == p_task_system_dta->tick)
 							{
 								snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-								displayCharPositionWrite(0, 0);
+								displayCharPositionWrite(0, 1);
 								displayStringWrite(display_str);
 							}
 
@@ -287,7 +287,7 @@ void task_system_update(void *parameters)
 							{
 								//entra en estado de falla
 								//reinicio el clock de falla
-								displayCharPositionWrite(0, 0);
+								displayCharPositionWrite(0, 1);
 								displayStringWrite("EVENTO FALLA");
 
 								LOGGER_LOG("temp_amb: %lu\r\n",temp_amb);
@@ -312,6 +312,9 @@ void task_system_update(void *parameters)
 							if(EV_SYS_BTN_ON_ACTIVE == p_task_system_dta->event)
 							// si se vuelve a tocar btn ON vuelvo a reiniciar el sistema
 							{
+								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+	            	  			displayCharPositionWrite(0,1);
+								displayStringWrite(display_str);
 								p_task_system_dta->state = ST_SYS_XX_IDLE;
 							}
 						}

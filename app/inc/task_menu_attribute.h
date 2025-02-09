@@ -66,12 +66,12 @@ extern "C" {
 
 /* Events to excite Task Menu */
 typedef enum task_menu_ev {
+						   EV_MEN_ON_IDLE,
+						   EV_MEN_ON_ACTIVE,
 						   EV_MEN_ENT_IDLE,
 						   EV_MEN_ENT_ACTIVE,
 						   EV_MEN_NEX_IDLE,
 						   EV_MEN_NEX_ACTIVE,
-						   EV_MEN_ON_ACTIVE,
-						   EV_MEN_ON_IDLE,
 						} task_menu_ev_t;
 
 /* State of Task Menu */
@@ -80,6 +80,7 @@ typedef enum task_menu_st {ST_MEN_XX_IDLE,
 						   ST_MAIN_MENU,
 						   ST_01_MENU,
 						   ST_02_MENU,
+						   ST_MEN_STANDBY,
 							} task_menu_st_t;
 
 						  /* State of Task Menu */

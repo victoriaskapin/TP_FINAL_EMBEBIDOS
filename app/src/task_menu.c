@@ -65,7 +65,7 @@
 #define MENU_2_TIEMPO_REPOTA_FALLA_MAX  		3ul
 #define MENU_2_SET_POINT_TEMP_MAX  			    3ul
 /********************** internal data declaration ****************************/
-task_menu_dta_t task_menu_dta = {DEL_MEN_XX_MIN, ST_MAIN_MENU, EV_MEN_ENT_IDLE, false};
+task_menu_dta_t task_menu_dta = {DEL_MEN_XX_MIN, ST_MEN_STANDBY, EV_MEN_ENT_IDLE, false};
 
 task_menu_set_up_dta_t task_menu_set_up= {0,0,0};
 
@@ -193,27 +193,20 @@ void task_menu_update(void *parameters)
 				case ST_MAIN_MENU:
 	            	  	  	      p_task_menu_set_up_dta = & task_menu_set_up;
 
-		            	  	/*
-									if ( true == any_value_task_adc()){
-										temp_uC_raw  = get_value_task_adc();
-										temp_amb_raw = get_value_task_adc();
-									}
-									LOGGER_LOG("temp_uC_raw:%lu\r\n",temp_uC_raw);
-									LOGGER_LOG("temp_amb_raw:%lu\r\n",temp_amb_raw);
+	            	  	  	      //snprintf(menu_str, sizeof(menu_str),"Ent/Nxt Tset:%lu ",_task_menu_set_up_dta->set_point_temperatura);
+	            	  	  	      displayCharPositionWrite(0,0);
+	            	  	  	      displayStringWrite("Ent/Nxt Tset:26 ");
 
+	            	  			 // displayCharPositionWrite(0,1);
+	            	  			 // snprintf(menu_str, sizeof(menu_str),"Tamb:%lu Tset:%lu ",temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+	            	  			 // displayStringWrite(menu_str);
 
-	            	  	  	      displayCharPositionWrite(0, 0);
-		            	  	  	  temp_amb = (3.30 * 100 * temp_amb_raw)/(4096);
-		            	  	  	  temp_uC  = ((1700-temp_uC_raw)/4.3 )+25;
-
-	            	  	  	      snprintf(menu_str, sizeof(menu_str),"Ent/Nxt T uC:%lu ",temp_uC);
-	            	  	  	      displayStringWrite(menu_str);
-
-	            	  			  displayCharPositionWrite(0,1);
-	            	  			  snprintf(menu_str, sizeof(menu_str),"Tamb:%lu Tset:%lu ",temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-	            	  			  displayStringWrite(menu_str);
-
-							*/
+	            	  	  	      	  	  ///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
+	            	  	  	      if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
+	            	  	  	    	  //send struct
+									  p_task_menu_dta->event = EV_MEN_ON_IDLE;
+	            	  	  	    	  p_task_menu_dta->state = ST_MEN_STANDBY;
+	            	  	  	      }
 
 	            	    	  	  if ((true == p_task_menu_dta->flag) && (EV_MEN_ENT_ACTIVE == p_task_menu_dta->event)){
 	            	   	  	  		  p_task_menu_dta->flag = false;
@@ -223,6 +216,13 @@ void task_menu_update(void *parameters)
 	            	  	  	  	  break;
 
 				case ST_01_MENU:
+										///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
+								  if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
+
+									  //send struct
+									  p_task_menu_dta->event = EV_MEN_ON_IDLE;
+									  p_task_menu_dta->state = ST_MEN_STANDBY;
+								  }
 					             p_task_menu_set_up_dta = & task_menu_set_up;
 
 					 	 	 	 displayCharPositionWrite(0, 0);
@@ -273,7 +273,6 @@ void task_menu_update(void *parameters)
 								 break;
 
 				     case ST_02_MENU:
-
 					     	 	 displayCharPositionWrite(0, 0);
 					     	 	 displayStringWrite("   Enter/Next   ");
 					     	 	 displayStringWrite(menu_str);
@@ -326,8 +325,28 @@ void task_menu_update(void *parameters)
 								  p_task_menu_dta->flag_1=false;
 								  p_task_menu_dta->state = ST_01_MENU;
 								   }
+
+			    	 	 	 	///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
+							  if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
+								  //send struct
+								  //clean display
+
+								  p_task_menu_dta->event = EV_MEN_ON_IDLE;
+								  p_task_menu_dta->state = ST_MEN_STANDBY;
+							  }
 							   break;
-				default:break;
+				default:
+					if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
+						  //clean display
+						displayCharPositionWrite(0,0);
+						displayStringWrite("                ");
+						displayCharPositionWrite(0,1);
+						displayStringWrite("                ");
+
+						p_task_menu_dta->event = EV_MEN_ON_IDLE;
+						p_task_menu_dta->state = ST_MAIN_MENU;
+					}
+					break;
 			}
 		}
 	}

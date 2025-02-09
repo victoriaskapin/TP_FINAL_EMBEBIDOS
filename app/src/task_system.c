@@ -232,7 +232,12 @@ void task_system_update(void *parameters)
 
 								aire_a_on = true;
 
-								p_task_system_dta->tick = MAX_TICK_SWITCH;
+								/////// DANTE CODE BEGINS ////////////////
+
+								p_task_system_dta->tick = MAX_TICK_SWITCH; // aca esta levantando el max tick de cambio de motores por default
+								// podemos cargar ese dato en la estructura directamente por default y levantarlo siempre de la struct
+
+								/////////// DANTE CODE ENDS ///////////////
 								p_task_system_dta->state = ST_SYS_XX_ACTIVE;
 								p_task_system_dta->event = EV_SYS_BTN_ON_IDLE;
 							}

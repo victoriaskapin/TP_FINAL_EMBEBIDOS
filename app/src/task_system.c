@@ -253,7 +253,7 @@ void task_system_update(void *parameters)
 						{
 							p_task_system_dta->flag = false;
 
-							if(p_task_system_dta->tick/2 == p_task_system_dta->tick)
+							if(p_task_system_dta->tick == user_set_up_data.tiempo_conmuta_falla/2)
 							{
 								snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
 								displayCharPositionWrite(0, 1);

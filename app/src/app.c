@@ -170,6 +170,7 @@ void app_update(void)
 			if (task_dta_list[index].WCET < cycle_counter_time_us)
 			{
 				task_dta_list[index].WCET = cycle_counter_time_us;
+				LOGGER_LOG("Task %i = %d\r\n", index,cycle_counter_time_us);
 			}
 	    }
     }
@@ -184,7 +185,6 @@ void HAL_SYSTICK_Callback(void)
 	g_task_actuator_tick_cnt++;
 	g_task_menu_tick_cnt++;
 
-	//HAL_GPIO_TogglePin(LED_A_PORT, LED_A_PIN);
 }
 
 /********************** end of file ******************************************/

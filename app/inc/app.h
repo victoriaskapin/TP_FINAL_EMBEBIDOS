@@ -53,6 +53,14 @@ extern "C" {
 #define TEST_X (TEST_0)
 
 /********************** typedef **********************************************/
+typedef struct
+{	uint32_t       tiempo_conmuta_falla;
+	uint32_t       tiempo_reporta_falla;
+	uint32_t	   set_point_temperatura;
+
+} user_set_up_dta_t;
+
+extern user_set_up_dta_t user_set_up_data;
 
 /********************** external data declaration ****************************/
 extern uint32_t g_app_cnt;

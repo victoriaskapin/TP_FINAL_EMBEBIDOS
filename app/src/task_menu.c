@@ -91,7 +91,7 @@ uint32_t temp_uC=0;
 uint32_t g_task_menu_cnt;
 volatile uint32_t g_task_menu_tick_cnt;
 task_menu_set_up_dta_t   *p_task_menu_set_up_dta;
-
+//user_set_up_dta_t *p_task_menu_set_up_dta = &user_set_up_dta;
 
 /********************** external functions definition ************************/
 void task_menu_init(void *parameters)
@@ -191,11 +191,12 @@ void task_menu_update(void *parameters)
 			switch (p_task_menu_dta->state)
 			{
 				case ST_MAIN_MENU:
-	            	  	  	      p_task_menu_set_up_dta = & task_menu_set_up;
+	            	  	  	     // p_task_menu_set_up_dta = & task_menu_set_up;
+	            	  	  	      p_task_menu_set_up_dta = & user_set_up_data;
 
-	            	  	  	      //snprintf(menu_str, sizeof(menu_str),"Ent/Nxt Tset:%lu ",_task_menu_set_up_dta->set_point_temperatura);
+	            	  	  	      snprintf(menu_str, sizeof(menu_str),"Ent/Nxt Tset:%lu ",user_set_up_data.set_point_temperatura);
 	            	  	  	      displayCharPositionWrite(0,0);
-	            	  	  	      displayStringWrite("Ent/Nxt Tset:26 ");
+	            	  	  	      displayStringWrite(menu_str );
 
 	            	  			 // displayCharPositionWrite(0,1);
 	            	  			 // snprintf(menu_str, sizeof(menu_str),"Tamb:%lu Tset:%lu ",temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
@@ -223,19 +224,21 @@ void task_menu_update(void *parameters)
 									  p_task_menu_dta->event = EV_MEN_ON_IDLE;
 									  p_task_menu_dta->state = ST_MEN_STANDBY;
 								  }
-					             p_task_menu_set_up_dta = & task_menu_set_up;
-
+					             //p_task_menu_set_up_dta = & task_menu_set_up;
+								  p_task_menu_set_up_dta = & user_set_up_data;
 					 	 	 	 displayCharPositionWrite(0, 0);
 					 	 	 	 displayStringWrite("   Enter/Next    ");
 					 	 	 	displayStringWrite(menu_str);
 
-					 	 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_CONMUTA_FALLA_MEN_1){
+					 	 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_CONMUTA_FALLA_MEN_1)
+					 	 	 	 {
 
 					 	 	 		displayCharPositionWrite(0,1);
 					 	 	 		displayStringWrite("  Tiempo Conm   ");
 						 	 		displayStringWrite(menu_str);
 
-						 	 		p_task_sub_menu_dta->sub_menu_2=SET_UP_TIEMPO_CONMUTA_FALLA_MEN_2;}
+						 	 		p_task_sub_menu_dta->sub_menu_2=SET_UP_TIEMPO_CONMUTA_FALLA_MEN_2;
+					 	 	 	 }
 
 
 					 	 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_REPORTA_FALLA_MEN_1){

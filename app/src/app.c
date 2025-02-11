@@ -45,6 +45,7 @@
 
 /* Application & Tasks includes. */
 #include "board.h"
+#include "app.h"
 #include "task_system.h"
 #include "task_actuator.h"
 #include "task_sensor.h"
@@ -79,6 +80,14 @@ task_cfg_t task_cfg_list[]	= {
 		{task_menu_init,		task_menu_update, 	NULL},
 
 };
+user_set_up_dta_t user_set_up_data =
+{
+		10000,
+		4000,
+		45,
+};
+
+
 
 #define TASK_QTY	(sizeof(task_cfg_list)/sizeof(task_cfg_t))
 
@@ -109,6 +118,7 @@ void app_init(void)
 	LOGGER_LOG(p_app);
 
 	g_app_cnt = G_APP_CNT_INI;
+
 
 	/* Print out: Application execution counter */
 	LOGGER_LOG(" %s = %d\r\n", GET_NAME(g_app_cnt), (int)g_app_cnt);

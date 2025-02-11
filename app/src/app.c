@@ -84,7 +84,7 @@ user_set_up_dta_t user_set_up_data =
 {
 		10000,
 		4000,
-		45,
+		100,
 };
 
 

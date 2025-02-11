@@ -184,11 +184,9 @@ void task_system_update(void *parameters)
 					temp_amb_raw = get_value_task_adc();
 
 					temp_amb = (3.30 * 100 * temp_amb_raw)/(4096);
-					temp_uC  = ((1700-temp_uC_raw)/4.3 )+25;
-				//	 LOGGER_LOG("temp_uC_: %lu\r\n",temp_uC);
-				//	 LOGGER_LOG("temp_amb: %lu\r\n",temp_amb);
+					temp_uC  = ((1750-temp_uC_raw)/4.3 )+25; // 1700
 
-					if( temp_amb > TEMP_MAX_USER ){
+					if( temp_amb > user_set_up_data.set_point_temperatura ){
 						//LOGGER_LOG("FALLA POR temp_amb :%lu\r\n",temp_amb);
 						p_task_system_dta->event = EV_SYS_FAILURE_ACTIVE;
 					}
@@ -227,14 +225,18 @@ void task_system_update(void *parameters)
 								HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3); //buzzer off
 
 								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-	            	  			displayCharPositionWrite(0,1);
+	            	  			displayCharPositionWrite(0,0);
+								displayStringWrite(display_str);
+
+								displayCharPositionWrite(0, 1);
+								snprintf(display_str, sizeof(display_str), "Tiempo Conm: %lu", (user_set_up_data.tiempo_conmuta_falla)/1000);
 								displayStringWrite(display_str);
 
 								aire_a_on = true;
 
 								/////// DANTE CODE BEGINS ////////////////
 
-								p_task_system_dta->tick = MAX_TICK_SWITCH; // aca esta levantando el max tick de cambio de motores por default
+								p_task_system_dta->tick = user_set_up_data.tiempo_conmuta_falla; // aca esta levantando el max tick de cambio de motores por default
 								// podemos cargar ese dato en la estructura directamente por default y levantarlo siempre de la struct
 
 								/////////// DANTE CODE ENDS ///////////////
@@ -290,16 +292,11 @@ void task_system_update(void *parameters)
 
 							if (EV_SYS_SWITCH_AIRE_ACTIVE == p_task_system_dta->event || EV_SYS_FAILURE_ACTIVE == p_task_system_dta->event)
 							{
-								//entra en estado de falla
-								//reinicio el clock de falla
-								displayCharPositionWrite(0, 1);
-								displayStringWrite("EVENTO FALLA");
-
 								LOGGER_LOG("temp_amb: %lu\r\n",temp_amb);
 
 								LOGGER_LOG(" EVENTO DE FALLA, ESTADO ACTIVO \n");
 								counter_tick = p_task_system_dta->tick;
-								p_task_system_dta->tick = MAX_TICK_ALARM;
+								p_task_system_dta->tick = user_set_up_data.tiempo_reporta_falla;
 								p_task_system_dta->state = ST_SYS_XX_FAILURE;
 							}
 
@@ -318,7 +315,7 @@ void task_system_update(void *parameters)
 							// si se vuelve a tocar btn ON vuelvo a reiniciar el sistema
 							{
 								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-	            	  			displayCharPositionWrite(0,1);
+	            	  			displayCharPositionWrite(0,0);
 								displayStringWrite(display_str);
 								p_task_system_dta->state = ST_SYS_XX_IDLE;
 							}
@@ -353,7 +350,7 @@ void task_system_update(void *parameters)
 									aire_a_on = true;
 								}
 
-								p_task_system_dta->tick = MAX_TICK_SWITCH;
+								p_task_system_dta->tick = user_set_up_data.tiempo_conmuta_falla;
 								p_task_system_dta->state = ST_SYS_XX_ACTIVE;
 
 							}
@@ -414,10 +411,10 @@ void task_system_update(void *parameters)
 								}
 								else
 								{
-									counter_tick -= MAX_TICK_ALARM;
+									counter_tick -= user_set_up_data.tiempo_reporta_falla;
 									p_task_system_dta->tick = counter_tick;
 
-									if (p_task_system_dta->tick > MAX_TICK_SWITCH){ // si durante el tiempo de falla se termino el tiempo de conmutacion cambio de motores
+									if (p_task_system_dta->tick > user_set_up_data.tiempo_conmuta_falla){ // si durante el tiempo de falla se termino el tiempo de conmutacion cambio de motores
 										p_task_system_dta->state = ST_SYS_XX_SWITCH_MOTORS;
 									}
 									p_task_system_dta->state = ST_SYS_XX_ACTIVE; // continuo con normalidad

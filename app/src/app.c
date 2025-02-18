@@ -82,9 +82,9 @@ task_cfg_t task_cfg_list[]	= {
 };
 user_set_up_dta_t user_set_up_data =
 {
-		10000,
+		60000,
 		4000,
-		100,
+		200,
 };
 
 

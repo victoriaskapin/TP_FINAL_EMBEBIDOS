@@ -1,0 +1,17 @@
+Parametros del PWM para el Buzzer de Alarma:
+
+Se ensayo el buzzer con distinas señales de PWM.
+Se encontro como la mas adecuada a una señal de PWM de frecuencia 1066Hz y duty al 20%. 
+Se hace notar que por la conexion del buzzer,una señal de PWM al 20 % represeta una señal al 80% sobre los terminales del buzzer.
+
+Parametros para lograr una señal de PWM de frecuencia 1066Hz y duty al 20%:
+
+ htim3.Init.Prescaler = PRESCALER = 4000u
+ htim3.Init.Period    = PERIOD    =  15U
+ TIM3->CCR3           = 3000
+ 
+        	    64 Mhz                                        
+ frecuencia = ------------------ = 1066HZ           
+        	    15*4000                     
+
+            

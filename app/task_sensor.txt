@@ -1,0 +1,4 @@
+Levanta los valores de SET y RESET de los sensores declarados en el IOC 
+
+Espera un tiempo determinado para evitar un falso positivo pasando por los estados RISING y FALLING 
+Una vez que se verifica el cambio de estado levanta un "signal up" o "signal down" a las tasks de system o menu 

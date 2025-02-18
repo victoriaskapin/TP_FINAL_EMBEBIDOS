@@ -60,16 +60,23 @@
 #define DEL_MEN_XX_MED				50ul
 #define DEL_MEN_XX_MAX				500ul
 
+#define TIME_CONSTANT_CONMUTA		60000ul
+#define TIME_CONSTANT_REPORTA 		1000ul
+
+#define MIN_VALUE_CONMUTA			1ul
+#define MIN_VALUE_REPORTA			1ul
+#define MIN_VALUE_TEMP				1ul
+
 #define MENU_1_MAX      						2ul
-#define MENU_2_TIEMPO_CONMUTA_FALLA_MAX  		9ul
-#define MENU_2_TIEMPO_REPOTA_FALLA_MAX  		3ul
-#define MENU_2_SET_POINT_TEMP_MAX  			    3ul
+#define MENU_2_TIEMPO_CONMUTA_FALLA_MAX  		10ul
+#define MENU_2_TIEMPO_REPOTA_FALLA_MAX  		10ul
+#define MENU_2_SET_POINT_TEMP_MAX  			    4ul
 /********************** internal data declaration ****************************/
 task_menu_dta_t task_menu_dta = {DEL_MEN_XX_MIN, ST_MEN_STANDBY, EV_MEN_ENT_IDLE, false};
 
-task_menu_set_up_dta_t task_menu_set_up= {0,0,0};
+//task_menu_set_up_dta_t task_menu_set_up= {0,0,0};
 
-task_sub_menu_dta_t task_sub_menu_dta ={0,0};
+task_sub_menu_dta_t task_sub_menu_dta ={0,1};
 
 
 #define MENU_DTA_QTY	(sizeof(task_menu_dta)/sizeof(task_menu_dta_t))
@@ -186,17 +193,26 @@ void task_menu_update(void *parameters)
 				p_task_menu_dta->event = get_event_task_menu();
 			}
 
+			if(HAL_GPIO_ReadPin(SWITCH_OFF_PORT, SWITCH_OFF_PIN) == SWITCH_OFF_PRESSED)
+			{
+				 // apago todo y event false;
+				 displayCharPositionWrite(0,0);
+				 displayStringWrite("                ");
+				 displayCharPositionWrite(0,1);
+				 displayStringWrite("                ");
+				 p_task_menu_dta->state = ST_MENU_OFF;
+
+			}
+
 			switch (p_task_menu_dta->state)
 			{
+				case ST_MENU_OFF:
+							p_task_menu_dta->event = EV_MEN_ON_IDLE;
+							p_task_menu_dta->state = ST_MEN_STANDBY;
+							break;
+
+
 				case ST_MAIN_MENU:
-
-	            	  	  	      snprintf(menu_str, sizeof(menu_str),"Ent/Nxt Tset:%lu ",user_set_up_data.set_point_temperatura);
-	            	  	  	      displayCharPositionWrite(0,0);
-	            	  	  	      displayStringWrite(menu_str );
-
-	            	  			  displayCharPositionWrite(0,1);
-	            	  			  snprintf(menu_str, sizeof(menu_str),"Switchtime:%lu hs",user_set_up_data.tiempo_conmuta_falla/1000);
-	            	  			  displayStringWrite(menu_str);
 
 	            	  	  	      	  	  ///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
 	            	  	  	      if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
@@ -204,12 +220,25 @@ void task_menu_update(void *parameters)
 									  p_task_menu_dta->event = EV_MEN_ON_IDLE;
 	            	  	  	    	  p_task_menu_dta->state = ST_MEN_STANDBY;
 	            	  	  	      }
+	            	  	  	      else if ((true == p_task_menu_dta->flag) && (EV_MEN_ENT_ACTIVE == p_task_menu_dta->event)){
+									  p_task_menu_dta->flag = false;
+									  p_task_menu_dta->flag_1=true;
+									  p_task_menu_dta->state = ST_01_MENU;
+	            	  	  	      }
+	            	  	  	      else if (true == p_task_menu_dta->flag)
+									{
+		            	  	  	      snprintf(menu_str, sizeof(menu_str),"Ent/Nxt Tset:%lu ",user_set_up_data.set_point_temperatura);
+		            	  	  	      displayCharPositionWrite(0,0);
+		            	  	  	      displayStringWrite(menu_str );
 
-	            	    	  	  if ((true == p_task_menu_dta->flag) && (EV_MEN_ENT_ACTIVE == p_task_menu_dta->event)){
-	            	   	  	  		  p_task_menu_dta->flag = false;
-	            	   	  	  	      p_task_menu_dta->flag_1=true;
-	            	  	  	  		  p_task_menu_dta->state = ST_01_MENU;
-	            	  	  	  	     }
+		            	  			  displayCharPositionWrite(0,1);
+		            	  			  snprintf(menu_str, sizeof(menu_str),"Switchtime:%lum  ",user_set_up_data.tiempo_conmuta_falla/TIME_CONSTANT_CONMUTA);
+		            	  			  displayStringWrite(menu_str);
+
+		            	  			  p_task_menu_dta->flag = false;
+									}
+
+
 	            	  	  	  	  break;
 
 				case ST_01_MENU:
@@ -220,38 +249,38 @@ void task_menu_update(void *parameters)
 									  p_task_menu_dta->event = EV_MEN_ON_IDLE;
 									  p_task_menu_dta->state = ST_MEN_STANDBY;
 								  }
+								  else{
+									  displayCharPositionWrite(0, 0);
+									  displayStringWrite("   Enter/Next    ");
+								  }
+								 if(p_task_menu_dta->event != EV_MEN_ON_IDLE){
+									 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_CONMUTA_FALLA_MEN_1)
+									 {
 
-					 	 	 	 displayCharPositionWrite(0, 0);
-					 	 	 	 displayStringWrite("   Enter/Next    ");
-					 	 	 	 displayStringWrite(menu_str);
+										displayCharPositionWrite(0,1);
+										displayStringWrite("  Tiempo Conm   ");
+										//displayStringWrite(menu_str);
 
-					 	 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_CONMUTA_FALLA_MEN_1)
-					 	 	 	 {
-
-					 	 	 		displayCharPositionWrite(0,1);
-					 	 	 		displayStringWrite("  Tiempo Conm   ");
-						 	 		displayStringWrite(menu_str);
-
-						 	 		p_task_sub_menu_dta->sub_menu_2=SET_UP_TIEMPO_CONMUTA_FALLA_MEN_2;
-					 	 	 	 }
-
-
-					 	 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_REPORTA_FALLA_MEN_1){
-
-					 	 	 		displayCharPositionWrite(0,1);
-						 	 	 		displayStringWrite("  Tiempo Falla  ");
-							 	 		displayStringWrite(menu_str);
-
-								 	p_task_sub_menu_dta->sub_menu_2=SET_UP_TIEMPO_REPORTA_FALLA_MEN_2;}
+										//p_task_sub_menu_dta->sub_menu_2= MIN_VALUE_CONMUTA;
+									 }
 
 
-						 	 	 if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_SET_POINT_TEMPERATURA_MEN_1){
+									 else if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_TIEMPO_REPORTA_FALLA_MEN_1){
 
-								    displayCharPositionWrite(0,1);
-								    displayStringWrite(" Set Point Temp");
-									displayStringWrite(menu_str);
+										displayCharPositionWrite(0,1);
+											displayStringWrite("  Tiempo Falla  ");
 
-									p_task_sub_menu_dta->sub_menu_2=SET_UP_SET_POINT_TEMPERATURA_MEN_2;}
+										// En el caso de que quiera un valor minimo especifico para mi tiempo de reporte de falla descomento la linea anterior
+									 }
+
+
+									 else if(p_task_sub_menu_dta->sub_menu_1 == SET_UP_SET_POINT_TEMPERATURA_MEN_1){
+
+										displayCharPositionWrite(0,1);
+										displayStringWrite(" Set Point Temp ");
+
+									 }
+								 }
 					 	 	 	/*-------------------------------------------------------------------------------------------*/
 					 	 	 	 if ((true == p_task_menu_dta->flag) && (EV_MEN_NEX_ACTIVE == p_task_menu_dta->event)){
 					 	 	 		p_task_sub_menu_dta->sub_menu_1++;
@@ -271,49 +300,60 @@ void task_menu_update(void *parameters)
 								 break;
 
 				     case ST_02_MENU:
+				    	 ///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
+								if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
+								//send struct
+								//clean display
+
+								p_task_menu_dta->event = EV_MEN_ON_IDLE;
+								p_task_menu_dta->state = ST_MEN_STANDBY;
+								}
+								else{
 					     	 	 displayCharPositionWrite(0, 0);
 					     	 	 displayStringWrite("   Enter/Next   ");
-					     	 	 displayStringWrite(menu_str);
+								}
 
+					if(p_task_menu_dta->event != EV_MEN_ON_IDLE)
+					{
+						 switch (p_task_sub_menu_dta->sub_menu_1)	{
 
-					 switch (p_task_sub_menu_dta->sub_menu_1)	{
+											 case SET_UP_TIEMPO_CONMUTA_FALLA_MEN_2 :
 
-								 	 	 case SET_UP_TIEMPO_CONMUTA_FALLA_MEN_2 :
+													if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_TIEMPO_CONMUTA_FALLA_MAX){
+														p_task_sub_menu_dta->sub_menu_2= 1;}
 
-								 				if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_TIEMPO_CONMUTA_FALLA_MAX){
-								 	 		 		p_task_sub_menu_dta->sub_menu_2=0;}
+													user_set_up_data.tiempo_conmuta_falla = p_task_sub_menu_dta->sub_menu_2 * TIME_CONSTANT_CONMUTA;
 
-								 				user_set_up_data.tiempo_conmuta_falla=p_task_sub_menu_dta->sub_menu_2 * 1000;
+													displayCharPositionWrite(0, 1);
+													snprintf(menu_str, sizeof(menu_str), "Tiempo Conm:%lum ", (user_set_up_data.tiempo_conmuta_falla)/ TIME_CONSTANT_CONMUTA);
+													displayStringWrite(menu_str);
+											  break;
 
-								 			    displayCharPositionWrite(0, 1);
-								 			    snprintf(menu_str, sizeof(menu_str), "Tiempo Conm: %lu", (user_set_up_data.tiempo_conmuta_falla)/1000);
-								 				displayStringWrite(menu_str);
-								 	 	  break;
+											 case SET_UP_TIEMPO_REPORTA_FALLA_MEN_2 :
 
-								 	 	 case SET_UP_TIEMPO_REPORTA_FALLA_MEN_2 :
+													  if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_TIEMPO_REPOTA_FALLA_MAX){
+														 p_task_sub_menu_dta->sub_menu_2= 1;}
 
-												  if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_TIEMPO_REPOTA_FALLA_MAX){
-													 p_task_sub_menu_dta->sub_menu_2=0;}
+													  user_set_up_data.tiempo_reporta_falla= p_task_sub_menu_dta->sub_menu_2 * TIME_CONSTANT_REPORTA;
 
-												  user_set_up_data.tiempo_reporta_falla= p_task_sub_menu_dta->sub_menu_2 * 1000;
+													  displayCharPositionWrite(0, 1);
+													  snprintf(menu_str, sizeof(menu_str), "TiempoFalla:%lus ",user_set_up_data.tiempo_reporta_falla / TIME_CONSTANT_REPORTA);
+													  displayStringWrite(menu_str);
+											 break;
 
-												  displayCharPositionWrite(0, 1);
-												  snprintf(menu_str, sizeof(menu_str), "Tiempo Falla: %lu",user_set_up_data.tiempo_reporta_falla /1000);
-									     		  displayStringWrite(menu_str);
-									     break;
+											 case SET_UP_SET_POINT_TEMPERATURA_MEN_2 :
 
-								 	 	 case SET_UP_SET_POINT_TEMPERATURA_MEN_2 :
+													 if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_SET_POINT_TEMP_MAX){
+														 p_task_sub_menu_dta->sub_menu_2= 1;}
 
-								 	 		 	 if (p_task_sub_menu_dta->sub_menu_2 > MENU_2_SET_POINT_TEMP_MAX){
-								 	 		 		 p_task_sub_menu_dta->sub_menu_2=0;}
+													user_set_up_data.set_point_temperatura=p_task_sub_menu_dta->sub_menu_2 * 20;
 
-								 	 		 	user_set_up_data.set_point_temperatura=p_task_sub_menu_dta->sub_menu_2 * 20;
-
-								 	 		 	displayCharPositionWrite(0, 1);
-								 	 		 	snprintf(menu_str, sizeof(menu_str), "SetPointTemp: %lu",user_set_up_data.set_point_temperatura);
-								 	 		 	displayStringWrite(menu_str);
-								 	     break;
-					                     default:break;}
+													displayCharPositionWrite(0, 1);
+													snprintf(menu_str, sizeof(menu_str), "SetPointTmp:%luC ",user_set_up_data.set_point_temperatura);
+													displayStringWrite(menu_str);
+											 break;
+											 default:break;}
+					}
 					 /*-------------------------------------------------------------------------------------------*/
 	 	 	 	 	 	 	 if ((true == p_task_menu_dta->flag) && (EV_MEN_NEX_ACTIVE == p_task_menu_dta->event)){
 	 	 	 	 	 	 		p_task_sub_menu_dta->sub_menu_2++;
@@ -324,23 +364,10 @@ void task_menu_update(void *parameters)
 								  p_task_menu_dta->state = ST_01_MENU;
 								   }
 
-			    	 	 	 	///// VUELVO A ESTADO DE MONITOREO AUTOMATICO ////
-							  if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
-								  //send struct
-								  //clean display
-
-								  p_task_menu_dta->event = EV_MEN_ON_IDLE;
-								  p_task_menu_dta->state = ST_MEN_STANDBY;
-							  }
 							   break;
 				default:
 					if ((true == p_task_menu_dta->flag) && ( EV_MEN_ON_ACTIVE == p_task_menu_dta->event)){
-						  //clean display
-						displayCharPositionWrite(0,0);
-						displayStringWrite("                ");
-						displayCharPositionWrite(0,1);
-						displayStringWrite("                ");
-
+						p_task_menu_dta->flag = false;
 						p_task_menu_dta->event = EV_MEN_ON_IDLE;
 						p_task_menu_dta->state = ST_MAIN_MENU;
 					}

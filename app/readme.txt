@@ -26,7 +26,22 @@ Example: tdse-tp2_01-model_integration
 
   task_sensor.c (task_sensor.h, task_sensor_attribute.h) 
    Non-Blocking & Update By Time Code -> Sensor Modeling
+
+   task_menu.c (task_menu.h, task_menu_attribute.h)
+   Non-Blocking Code -> Set up System Modeling
+
+   task_menu_interface.c (task_menu_interface.h)
+    Non-Blocking Code
   
+   task_adc.c (task_adc.h )
+    Non-Blocking & Update By Time Code -> Sensor Modeling
+
+   task_adc_interface.c (task_adc_interface.h)
+   Non-Blocking Code
+
+   display.c (display.h)
+   Non-Blocking Code
+   
   logger.h (logger.c)
    Utilities for Retarget "printf" to Console
 

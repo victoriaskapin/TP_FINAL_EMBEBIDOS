@@ -1,0 +1,16 @@
+Este programa de stm32 F103RB Nucleo board realiza un Sistema de Control de Secuenciador de Equipos de Refrigeración (MVP)
+
+La arquitectura de este programa sigue un esquema de sensor system actuator
+
+Iterados en un secuenciador de tasks en App.c 
+
+task_sensor.c realiza un seguimiento de los sensores declarados en el board.h y levanta tasks de system y menu 
+
+a su vez system.c levanta los tasks y ejecuta acciones de los actuators 
+si el sistema detecta un evento de tipo BTN_ON_ACTIVE el systema general de monitoreo pasa a modo standby y comienza a ejecutarse 
+task menu que permite al usuario cambiar las configuraciones default del programa, como temperatura maxima permitida, tiempo de conmutacion y tiempo de conmutacion 
+
+actuator.c ejecuta el prendido y apagado de las luces de usuario y equipos de refrigeracion. 
+display.c gestiona el uso del display para notificar al usuario las temperaturas en ejecucion y permitir la exploracion del menu de set up.
+
+Inicializa la estructura global que permite la comunicacion entre menu y system 

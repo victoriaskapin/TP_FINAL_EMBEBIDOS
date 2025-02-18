@@ -1,0 +1,5 @@
+Recibe las tasks generadas por system para iterar entre los estados de on y off de los leds 
+
+Al recibir un evento de ON enciende el led 
+Al recibir un evento de OFF apaga el led 
+Al recibir un evento de blink comienza a descontar con un tick manteniendo el led encendido tiempo = tick/2 

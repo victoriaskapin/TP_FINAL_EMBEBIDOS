@@ -1,0 +1,35 @@
+Este programa recibe una task system con un state, event y flag. 
+
+System init 
+Inicializa el pwm en una frecuencia de 3000 para que sea audible para el usuario.
+Inicializa el display en una comunicacion de 4bits.   
+Levanta las tasks enviadas por task_sensor.
+Levanta la estructura global de configuracion
+
+System update 
+Levanta los datos enviados por task_adc. 
+Valida que el switch OFF no este activo, si lo esta pasa a SYSTEM_OFF 
+
+Valida que tenga al menos un equipo de refrigeracion conectado para continuar con el switch case de estados. 
+
+Comienza con el estado ST_SYS_IDLE en evento BOTON ON ACTIVE 
+Que activa por default el equipo de refrigeracion A y la luz de usuario A 
+Inicializa el tick de conmutacion en su valor maximo por default a 1 minuto y valor maximo de temperatura a 60 
+
+pasa a estado ST_ACTIVE que es el estado de ejecucion normal activa de mi sistema 
+Este estado actualiza el display de usuario con las temperaturas de micro y de ambiente y monitorea por fallas los equipos de refrigeracion 
+Tambien actualiza el tick de conmutacion 
+
+Switch de motores por tiempo de conmutacion 
+No se activa el estado de alarma, este es un comportamiento normal del sistema, e intercambia los equipos de refrigeracion en funcionamiento
+
+Estado de falla activo 
+Al detectar una falla por aumento de temperatura o una falla de algun equipo de aire, el sistema espera un tiempo de falla para validar que no sea un falso positivo 
+y luego prende el buzzer de alarma e intercambia los motores en el caso de que el que falle sea el que esta actualmente andando en caso contrario no cambia de motores y da aviso de falla por display
+
+Standby 
+El usuario puede modificar los valores de tiempo de conmutacion, temperatura de falla y tiempo de falla mediante la navegacion de un menu
+Al entrar en este menu el sistema de monitoreo queda en estado de standby parpadeando las luces de usuario. 
+
+
+

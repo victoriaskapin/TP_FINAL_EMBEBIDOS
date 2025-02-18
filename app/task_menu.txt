@@ -1,0 +1,10 @@
+Este menu permite al usuario mediante su navegacion cargar la estructura global "user_set_up_data" que luego sera utilizada por el task_system para setear las condiciones de operacion 
+
+Se inicializa en modo standby ya que el estado de monitoreo se inicializa activo. 
+Mediante los sensores BOTON ON, BOTON ENTER y BOTON NEXT el usuario podra 
+
+Entrar y salir del modo standby, 
+Iterar sobre el menu 
+Modificar los valores de operacion 
+
+En todo momento del menu el usuario puede salir del modo de configuracion utilizando el BOTON ON

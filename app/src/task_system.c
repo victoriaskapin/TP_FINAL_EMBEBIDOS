@@ -71,7 +71,7 @@
 #define MAX_TICK_SWITCH				10000ul
 #define TEMP_MAX_USER				200
 
-
+#define TIME_CONSTANT_CONMUTA		60000ul
 /********************** internal data declaration ****************************/
 task_system_dta_t task_system_dta =
 	{DEL_SYS_XX_MIN, ST_SYS_XX_IDLE, EV_SYS_BTN_ON_ACTIVE, false};
@@ -80,13 +80,16 @@ task_system_dta_t task_system_dta =
 
 uint32_t counter_tick= 0;
 uint32_t tempAmb = 0;
-bool 	switch_motors_flag = false;
+bool 	switch_motors_flag = true;
 bool	aire_a_on = false;
+bool	buzzer_on = false;
+bool 	falla_de_temp = false;
 
 uint32_t temp_amb_raw=0;
 uint32_t temp_uC_raw=0;
 uint32_t temp_amb=0;
 uint32_t temp_uC=0;
+
 extern TIM_HandleTypeDef htim3;
 /********************** internal functions declaration ***********************/
 
@@ -107,6 +110,7 @@ void task_system_init(void *parameters)
 	bool b_event;
 
 	displayInit( DISPLAY_CONNECTION_GPIO_4BITS );
+	TIM3->CCR3 = 3000;
 
 	/* Print out: Task Initialized */
 	LOGGER_LOG("  %s is running - %s\r\n", GET_NAME(task_system_init), p_task_system);
@@ -183,25 +187,36 @@ void task_system_update(void *parameters)
 					temp_uC_raw  = get_value_task_adc();
 					temp_amb_raw = get_value_task_adc();
 
+
 					temp_amb = (3.30 * 100 * temp_amb_raw)/(4096);
 					temp_uC  = ((1750-temp_uC_raw)/4.3 )+25; // 1700
 
-					if( temp_amb > user_set_up_data.set_point_temperatura ){
-						//LOGGER_LOG("FALLA POR temp_amb :%lu\r\n",temp_amb);
-						p_task_system_dta->event = EV_SYS_FAILURE_ACTIVE;
-					}
+					falla_de_temp = temp_amb > user_set_up_data.set_point_temperatura;
 				}
 		/// verifico que el switch de off no este activado si lo esta overwrite de evento a off.
 
-		 if(HAL_GPIO_ReadPin(SWITCH_OFF_PORT, SWITCH_OFF_PIN) == SWITCH_OFF_HOVER) //ACA CAMBIE EL BOARD
+		 if(HAL_GPIO_ReadPin(SWITCH_OFF_PORT, SWITCH_OFF_PIN) == SWITCH_OFF_HOVER)
 		 {
 			 p_task_system_dta->flag = true;
 		 }
 		 else if(HAL_GPIO_ReadPin(SWITCH_OFF_PORT, SWITCH_OFF_PIN) == SWITCH_OFF_PRESSED)
 		 {
 			 // apago todo y event false;
+			 displayCharPositionWrite(0,0);
+			 displayStringWrite("                ");
+			 displayCharPositionWrite(0,1);
+			 displayStringWrite("                ");
 			 p_task_system_dta->state = ST_SYS_XX_OFF;
 
+		 }
+		 if( (HAL_GPIO_ReadPin(SWITCH_AIRE_A_PORT, SWITCH_AIRE_A_PIN) == SWITCH_AIRE_A_PRESSED) && (HAL_GPIO_ReadPin(SWITCH_AIRE_B_PORT, SWITCH_AIRE_B_PIN) == SWITCH_AIRE_B_PRESSED ) )
+		 {
+
+			 displayCharPositionWrite(0,0);
+			 displayStringWrite("#### ERROR #### ");
+			 displayCharPositionWrite(0,1);
+			 displayStringWrite(" NOT CONNECTED  ");
+			 p_task_system_dta->state = ST_SYS_XX_OFF;
 		 }
 
 
@@ -213,33 +228,46 @@ void task_system_update(void *parameters)
 							p_task_system_dta->flag = false;
 							if(EV_SYS_BTN_ON_ACTIVE == p_task_system_dta->event) //prende el aire A por default y pone el clock de switch a max
 							{
-								// leds testigo
-								put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_B);
-								put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_A);
+								if(HAL_GPIO_ReadPin(SWITCH_AIRE_A_PORT, SWITCH_AIRE_A_PIN) == SWITCH_AIRE_A_HOVER){
+									// leds testigo
+									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_B);
+									put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_A);
 
-								// leds aires
-								put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_B);
-								put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_A);
+									// leds aires
+									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_B);
+									put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_A);
+									aire_a_on = true;
+								}
+								else // si el aire A no esta operativo prendo el aire B
+								{
+									// leds testigo
+									put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_B);
+									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_A);
 
-								TIM3->CCR3 = 3000;
+									// leds aires
+									put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_B);
+									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_A);
+
+									aire_a_on = false;
+								}
+
+
+
 								HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3); //buzzer off
 
 								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
-	            	  			displayCharPositionWrite(0,0);
+								displayCharPositionWrite(0,0);
 								displayStringWrite(display_str);
 
 								displayCharPositionWrite(0, 1);
-								snprintf(display_str, sizeof(display_str), "Tiempo Conm: %lu", (user_set_up_data.tiempo_conmuta_falla)/1000);
+								snprintf(display_str, sizeof(display_str), "Tiempo Conm:%lum ", (user_set_up_data.tiempo_conmuta_falla)/TIME_CONSTANT_CONMUTA);
 								displayStringWrite(display_str);
 
-								aire_a_on = true;
 
-								/////// DANTE CODE BEGINS ////////////////
+								switch_motors_flag = true;
 
 								p_task_system_dta->tick = user_set_up_data.tiempo_conmuta_falla; // aca esta levantando el max tick de cambio de motores por default
-								// podemos cargar ese dato en la estructura directamente por default y levantarlo siempre de la struct
 
-								/////////// DANTE CODE ENDS ///////////////
 								p_task_system_dta->state = ST_SYS_XX_ACTIVE;
 								p_task_system_dta->event = EV_SYS_BTN_ON_IDLE;
 							}
@@ -253,10 +281,14 @@ void task_system_update(void *parameters)
 						{
 							p_task_system_dta->flag = false;
 
-							if(p_task_system_dta->tick == user_set_up_data.tiempo_conmuta_falla/2)
+							if(p_task_system_dta->tick == user_set_up_data.tiempo_conmuta_falla /2 || p_task_system_dta->tick == user_set_up_data.tiempo_conmuta_falla /4 || p_task_system_dta->tick == user_set_up_data.tiempo_conmuta_falla * 3/4 )
 							{
-								snprintf(display_str, sizeof(display_str),"Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+								snprintf(display_str, sizeof(display_str)," Tamb:%lu TuC:%lu ",temp_amb,temp_uC);//temp_amb,p_task_menu_set_up_dta->set_point_temperatura);
+								displayCharPositionWrite(0,0);
+								displayStringWrite(display_str);
+
 								displayCharPositionWrite(0, 1);
+								snprintf(display_str, sizeof(display_str), "Tiempo Conm:%lum ", (user_set_up_data.tiempo_conmuta_falla)/TIME_CONSTANT_CONMUTA);
 								displayStringWrite(display_str);
 							}
 
@@ -290,15 +322,18 @@ void task_system_update(void *parameters)
 								p_task_system_dta->state = ST_SYS_XX_STANDBY;
 							}
 
-							if (EV_SYS_SWITCH_AIRE_ACTIVE == p_task_system_dta->event || EV_SYS_FAILURE_ACTIVE == p_task_system_dta->event)
+							else if (EV_SYS_FAILURE_ACTIVE == p_task_system_dta->event ||
+									falla_de_temp ||
+									(EV_SYS_SWITCH_AIRE_A_ACTIVE == p_task_system_dta->event) ||
+									(EV_SYS_SWITCH_AIRE_B_ACTIVE == p_task_system_dta->event ))
 							{
 								LOGGER_LOG("temp_amb: %lu\r\n",temp_amb);
-
 								LOGGER_LOG(" EVENTO DE FALLA, ESTADO ACTIVO \n");
 								counter_tick = p_task_system_dta->tick;
 								p_task_system_dta->tick = user_set_up_data.tiempo_reporta_falla;
 								p_task_system_dta->state = ST_SYS_XX_FAILURE;
 							}
+
 
 						}
 						break;
@@ -323,35 +358,54 @@ void task_system_update(void *parameters)
 						break;
 
 					case ST_SYS_XX_SWITCH_MOTORS:
-							if ( true == p_task_system_dta->flag ){
+							if ( true == p_task_system_dta->flag){
 								p_task_system_dta->flag = false;
+								if(switch_motors_flag)
+								{	// cambio de motores
+									LOGGER_LOG(" CAMBIO DE MOTORES \n");
+									if( aire_a_on && (HAL_GPIO_ReadPin(SWITCH_AIRE_B_PORT, SWITCH_AIRE_B_PIN) == SWITCH_AIRE_B_HOVER))
+									{
+										put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_B);
+										put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_A);
 
-								// cambio de motores
-								LOGGER_LOG(" CAMBIO DE MOTORES, ESTADO ACTIVO \n");
-								if( aire_a_on)
-								{
-									put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_B);
-									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_A);
+										// leds aires
+										put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_B);
+										put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_A);
 
-									// leds aires
-									put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_B);
-									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_A);
+										aire_a_on = false;
+									}
+									else if(!aire_a_on && HAL_GPIO_ReadPin(SWITCH_AIRE_A_PORT, SWITCH_AIRE_A_PIN) == SWITCH_AIRE_A_HOVER)
+									{
+										put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_B);
+										put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_A);
 
-									aire_a_on = false;
-								}
-								else {
-									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_B);
-									put_event_task_actuator(EV_LED_XX_ON, ID_LED_USER_A);
+										// leds aires
+										put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_B);
+										put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_A);
 
-									// leds aires
-									put_event_task_actuator(EV_LED_XX_OFF, ID_LED_AIRE_B);
-									put_event_task_actuator(EV_LED_XX_BLINK, ID_LED_AIRE_A);
+										aire_a_on = true;
+									}
+									else if(aire_a_on)
+									{
+										displayCharPositionWrite(0,1);
+										displayStringWrite("  aire B falla  ");
+										//LOGGER_LOG(" AIRE B FALLA \n");
 
-									aire_a_on = true;
+									}
+									else{
+										displayCharPositionWrite(0,1);
+										displayStringWrite("  aire A falla  ");
+										//LOGGER_LOG(" AIRE A FALLA \n");
+									}
 								}
 
 								p_task_system_dta->tick = user_set_up_data.tiempo_conmuta_falla;
 								p_task_system_dta->state = ST_SYS_XX_ACTIVE;
+
+								if(buzzer_on)
+								{
+									switch_motors_flag = false;
+								}
 
 							}
 						break;
@@ -363,7 +417,6 @@ void task_system_update(void *parameters)
 						put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_B);
 						put_event_task_actuator(EV_LED_XX_OFF, ID_LED_USER_A);
 
-						TIM3->CCR3 = 3000;
 						HAL_TIM_PWM_Stop(&htim3,TIM_CHANNEL_3);
 						p_task_system_dta->event = EV_SYS_BTN_ON_ACTIVE; // si quiero que se prenda ni bien se levanta el boton
 						p_task_system_dta->state = ST_SYS_XX_IDLE;
@@ -401,12 +454,17 @@ void task_system_update(void *parameters)
 							}
 							// si se termino el tiempo de rebote
 							else {
-								if (EV_SYS_FAILURE_ACTIVE == p_task_system_dta->event || EV_SYS_SWITCH_AIRE_ACTIVE == p_task_system_dta->event)
+								if (EV_SYS_FAILURE_ACTIVE == p_task_system_dta->event ||
+										falla_de_temp ||
+										EV_SYS_SWITCH_AIRE_A_ACTIVE == p_task_system_dta->event ||
+										EV_SYS_SWITCH_AIRE_B_ACTIVE == p_task_system_dta->event)
 								{
-									TIM3->CCR3 = 3000;
+
 									HAL_TIM_PWM_Start(&htim3,TIM_CHANNEL_3);// prendo el buzzer
 
 									LOGGER_LOG(" CAMBIO DE MOTORES, ESTADO FALLA con buzzer \n");
+
+									buzzer_on = true;
 									p_task_system_dta->state = ST_SYS_XX_SWITCH_MOTORS; // cambio motores
 								}
 								else

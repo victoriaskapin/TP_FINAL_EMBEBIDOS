@@ -81,6 +81,7 @@ typedef enum task_menu_st {ST_MEN_XX_IDLE,
 						   ST_01_MENU,
 						   ST_02_MENU,
 						   ST_MEN_STANDBY,
+						   ST_MENU_OFF,
 							} task_menu_st_t;
 
 						  /* State of Task Menu */

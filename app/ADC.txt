@@ -1,0 +1,13 @@
+Configuracion ADC:
+
+Se configuro el ADC1 para poder registrar a la temperatura interna del microcoontrolador (Temperature Sensor Channel)
+y para registrar la temperatura ambiente (INO).
+El modo de conversion continua se dejo deshabilitado, de forma tal que todas la veces que se requieran las muestras,
+se debe activar al ADC.
+Para ambos canales : Sampling Time : 239.5 Cycles.
+Rank 1 = Channel Temperature Sensor.
+Rank 2 = Channel 0.
+
+
+ 
+

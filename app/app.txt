@@ -14,3 +14,5 @@ actuator.c ejecuta el prendido y apagado de las luces de usuario y equipos de re
 display.c gestiona el uso del display para notificar al usuario las temperaturas en ejecucion y permitir la exploracion del menu de set up.
 
 Inicializa la estructura global que permite la comunicacion entre menu y system 
+
+WCET el uso del display.c noto una incrementacion del tiempo de ejecucion que realentiza notablemente el programa
